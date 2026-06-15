@@ -1,33 +1,70 @@
-import Link from "next/link";
-import { Sparkles } from "lucide-react";
-import { LogoMark } from "@/components/brand/logo";
+import type { Metadata } from "next";
+import { Calendar, Download, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { StatCard } from "@/components/dashboard/stat-card";
+import {
+  RevenueCard,
+  LeadSourceCard,
+  ActivityFeed,
+  RecommendationsPanel,
+} from "@/components/dashboard/widgets";
 import { Button } from "@/components/ui/button";
+import { RevealGroup, RevealItem } from "@/components/motion/reveal";
+import { stats } from "@/data/dashboard";
+import { currentUser } from "@/lib/nav";
 
-/**
- * Temporary placeholder — the full dashboard app (sidebar, widgets, charts,
- * leads, CRM, etc.) is built in Phase 2. This keeps the auth flow clickable.
- */
-export default function DashboardPlaceholder() {
+export const metadata: Metadata = { title: "Dashboard" };
+
+export default function DashboardPage() {
   return (
-    <div className="grid min-h-screen place-items-center px-6 text-center">
-      <div className="max-w-md">
-        <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 to-accent-500 shadow-[0_10px_40px_-10px_rgba(99,133,255,0.8)]">
-          <Sparkles className="size-7 text-white" />
-        </span>
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight">
-          You&apos;re in. Welcome to stphnLead AI.
-        </h1>
-        <p className="mt-3 text-sm text-muted">
-          The full dashboard — overview widgets, leads, CRM pipeline, campaigns,
-          the AI agent, analytics, inbox, and meetings — is being built in the
-          next phase.
-        </p>
-        <div className="mt-8 flex items-center justify-center gap-3">
-          <Link href="/">
-            <Button variant="outline">Back to home</Button>
-          </Link>
-          <LogoMark />
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+      <PageHeader
+        title={`Welcome back, ${currentUser.name.split(" ")[0]}`}
+        description="Here's what's happening across your pipeline today."
+        actions={
+          <>
+            <Button variant="outline" size="sm">
+              <Calendar className="size-4" />
+              Last 30 days
+            </Button>
+            <Button variant="secondary" size="sm">
+              <Download className="size-4" />
+              <span className="hidden sm:inline">Export</span>
+            </Button>
+            <Button size="sm">
+              <Sparkles className="size-4" />
+              <span className="hidden sm:inline">Ask AI</span>
+            </Button>
+          </>
+        }
+      />
+
+      {/* stat grid */}
+      <RevealGroup
+        className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6"
+        stagger={0.05}
+      >
+        {stats.map((stat) => (
+          <RevealItem key={stat.id}>
+            <StatCard stat={stat} />
+          </RevealItem>
+        ))}
+      </RevealGroup>
+
+      {/* charts row */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RevenueCard />
         </div>
+        <LeadSourceCard />
+      </div>
+
+      {/* activity + recommendations */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <ActivityFeed />
+        </div>
+        <RecommendationsPanel />
       </div>
     </div>
   );

@@ -43,6 +43,20 @@ export function timeAgo(iso: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+/**
+ * Deterministic absolute timestamp (fixed UTC) — safe for statically
+ * prerendered content where relative times would cause hydration mismatches.
+ */
+export function formatClock(iso: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
 /** Deterministic initials from a name. */
 export function initials(name: string) {
   return name
