@@ -57,6 +57,32 @@ export function formatClock(iso: string) {
   }).format(new Date(iso));
 }
 
+/** Deterministic day label, e.g. "Mon, Jun 15" (UTC). */
+export function formatDay(iso: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
+/** Deterministic time, e.g. "2:00 PM" (UTC). */
+export function formatTime(iso: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(new Date(iso));
+}
+
+/** End time from a start ISO + duration in minutes. */
+export function formatTimeRange(iso: string, durationMins: number) {
+  const start = new Date(iso);
+  const end = new Date(start.getTime() + durationMins * 60000);
+  return `${formatTime(iso)} – ${formatTime(end.toISOString())}`;
+}
+
 /** Deterministic initials from a name. */
 export function initials(name: string) {
   return name
