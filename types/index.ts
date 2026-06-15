@@ -137,6 +137,7 @@ export interface InboxThread {
   labels: string[];
   at: string;
   messages: ConversationMessage[];
+  aiReplies: string[];
 }
 
 /* ---------- AI Agent ---------- */
