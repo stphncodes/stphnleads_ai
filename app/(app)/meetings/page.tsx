@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
-import { ComingSoon } from "@/components/dashboard/coming-soon";
+import { Plus } from "lucide-react";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { Button } from "@/components/ui/button";
+import { MeetingsView } from "@/components/meetings/meetings-view";
 
 export const metadata: Metadata = { title: "Meetings" };
 
 export default function MeetingsPage() {
   return (
-    <ComingSoon
-      icon="CalendarCheck"
-      title="Meetings"
-      phase="Phase 5"
-      description="A calendar of upcoming and past meetings with AI prep notes, attendees, and per-meeting context cards."
-    />
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+      <PageHeader
+        title="Meetings"
+        description="Your schedule with AI prep notes for every call."
+        actions={
+          <Button size="sm">
+            <Plus className="size-4" />
+            Schedule
+          </Button>
+        }
+      />
+      <MeetingsView />
+    </div>
   );
 }
