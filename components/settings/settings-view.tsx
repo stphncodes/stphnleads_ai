@@ -18,7 +18,7 @@ import { Input, Label, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/misc";
-import { currentUser } from "@/lib/nav";
+import type { ShellUser } from "@/components/dashboard/topbar";
 
 const tabs = [
   { value: "profile", label: "Profile", icon: <User className="size-4" /> },
@@ -71,13 +71,13 @@ function Section({
   );
 }
 
-export function SettingsView() {
+export function SettingsView({ user }: { user: ShellUser }) {
   const [tab, setTab] = React.useState("profile");
 
   return (
     <div className="space-y-6">
       <Tabs items={tabs} value={tab} onValueChange={setTab} />
-      {tab === "profile" && <ProfilePanel />}
+      {tab === "profile" && <ProfilePanel user={user} />}
       {tab === "workspace" && <WorkspacePanel />}
       {tab === "notifications" && <NotificationsPanel />}
       {tab === "integrations" && <IntegrationsPanel />}
@@ -87,7 +87,7 @@ export function SettingsView() {
 }
 
 /* ---------------- Profile ---------------- */
-function ProfilePanel() {
+function ProfilePanel({ user }: { user: ShellUser }) {
   return (
     <Section
       title="Profile"
@@ -102,7 +102,7 @@ function ProfilePanel() {
       }
     >
       <div className="flex items-center gap-4">
-        <Avatar name={currentUser.name} size="lg" ring />
+        <Avatar name={user.name} size="lg" ring />
         <div>
           <Button variant="outline" size="sm">
             <Upload className="size-3.5" />
@@ -113,13 +113,13 @@ function ProfilePanel() {
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label="Full name">
-          <Input defaultValue={currentUser.name} />
+          <Input defaultValue={user.name} />
         </Field>
         <Field label="Email">
-          <Input type="email" defaultValue={currentUser.email} />
+          <Input type="email" defaultValue={user.email} />
         </Field>
         <Field label="Role">
-          <Input defaultValue={currentUser.role} />
+          <Input defaultValue={user.role} />
         </Field>
         <Field label="Timezone">
           <Input defaultValue="(GMT-08:00) Pacific Time" />

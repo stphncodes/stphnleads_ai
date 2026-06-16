@@ -3,9 +3,9 @@
 import * as React from "react";
 import { Send, MousePointerClick, Reply, CalendarCheck } from "lucide-react";
 import { CampaignCard } from "./campaign-card";
-import { campaigns, campaignTypeConfig } from "@/data/campaigns";
+import { campaignTypeConfig } from "@/data/campaigns";
 import { formatCompact, formatPercent, cn } from "@/lib/utils";
-import type { CampaignType } from "@/types";
+import type { Campaign, CampaignType } from "@/types";
 
 const filters: { value: CampaignType | "all"; label: string }[] = [
   { value: "all", label: "All campaigns" },
@@ -14,7 +14,7 @@ const filters: { value: CampaignType | "all"; label: string }[] = [
   { value: "follow-up", label: "Follow Ups" },
 ];
 
-export function CampaignsView() {
+export function CampaignsView({ campaigns }: { campaigns: Campaign[] }) {
   const [filter, setFilter] = React.useState<CampaignType | "all">("all");
 
   const visible =

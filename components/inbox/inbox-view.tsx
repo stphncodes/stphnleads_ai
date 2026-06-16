@@ -13,11 +13,11 @@ import {
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ChannelIcon } from "@/components/ui/channel-icon";
-import { inboxThreads, inboxChannels, labelTones } from "@/data/inbox";
+import { inboxChannels, labelTones } from "@/data/inbox";
 import { formatClock, cn } from "@/lib/utils";
 import type { InboxChannel, InboxThread } from "@/types";
 
-export function InboxView() {
+export function InboxView({ threads: allThreads }: { threads: InboxThread[] }) {
   const [channel, setChannel] = React.useState<InboxChannel>("email");
   const [query, setQuery] = React.useState("");
   const [activeId, setActiveId] = React.useState<string | null>(null);
@@ -26,7 +26,7 @@ export function InboxView() {
 
   const threads = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    return inboxThreads.filter(
+    return allThreads.filter(
       (t) =>
         t.channel === channel &&
         (!q ||
@@ -34,9 +34,9 @@ export function InboxView() {
           t.company.toLowerCase().includes(q) ||
           t.subject.toLowerCase().includes(q)),
     );
-  }, [channel, query]);
+  }, [allThreads, channel, query]);
 
-  const active = inboxThreads.find((t) => t.id === activeId) ?? null;
+  const active = allThreads.find((t) => t.id === activeId) ?? null;
 
   // keep a valid selection when switching channel
   React.useEffect(() => {
@@ -46,7 +46,7 @@ export function InboxView() {
   }, [threads, activeId]);
 
   function unreadCount(ch: InboxChannel) {
-    return inboxThreads.filter((t) => t.channel === ch && t.unread).length;
+    return allThreads.filter((t) => t.channel === ch && t.unread).length;
   }
 
   function openThread(id: string) {

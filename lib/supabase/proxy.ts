@@ -1,0 +1,73 @@
+import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+
+/** Routes that require an authenticated session. */
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/leads",
+  "/crm",
+  "/campaigns",
+  "/ai-agent",
+  "/analytics",
+  "/inbox",
+  "/meetings",
+  "/settings",
+];
+
+/** Auth pages a signed-in user should be bounced away from. */
+const AUTH_PREFIXES = ["/sign-in", "/sign-up", "/forgot-password"];
+
+/**
+ * Refreshes the Supabase auth token on every matched request and enforces
+ * route protection. Called from the root `proxy.ts` (Next 16's renamed
+ * middleware). Must return the same `response` object Supabase wrote cookies
+ * onto, or the refreshed session is lost.
+ */
+export async function updateSession(request: NextRequest) {
+  let response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value),
+          );
+          response = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
+  );
+
+  // IMPORTANT: do not run logic between createServerClient and getUser().
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  const isAuthPage = AUTH_PREFIXES.some((p) => pathname.startsWith(p));
+
+  if (!user && isProtected) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/sign-in";
+    url.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isAuthPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
+  }
+
+  return response;
+}

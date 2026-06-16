@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScorePill } from "./score-pill";
 import { LeadDrawer } from "./lead-drawer";
-import { leads as allLeads } from "@/data/leads";
 import {
   leadStatusConfig,
   leadStatusOrder,
@@ -39,7 +38,7 @@ const statusFilters: { value: LeadStatus | "all"; label: string }[] = [
   })),
 ];
 
-export function LeadsTable() {
+export function LeadsTable({ leads: allLeads }: { leads: Lead[] }) {
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<LeadStatus | "all">("all");
   const [sort, setSort] = React.useState<{ key: SortKey; dir: "asc" | "desc" }>({
@@ -75,7 +74,7 @@ export function LeadsTable() {
       else cmp = a[sort.key].localeCompare(b[sort.key]);
       return cmp * dir;
     });
-  }, [query, status, sort]);
+  }, [allLeads, query, status, sort]);
 
   // reset to first page when filters change
   React.useEffect(() => setPage(0), [query, status]);

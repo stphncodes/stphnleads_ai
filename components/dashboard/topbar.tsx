@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import {
   Search,
   Bell,
@@ -25,7 +27,12 @@ import {
   DropdownLabel,
   DropdownSeparator,
 } from "@/components/ui/dropdown";
-import { currentUser } from "@/lib/nav";
+export interface ShellUser {
+  name: string;
+  email: string;
+  role: string;
+  plan: string;
+}
 
 const notifications = [
   {
@@ -55,8 +62,22 @@ const quickActions = [
   { icon: Sparkles, label: "Ask stphnAgent" },
 ];
 
-export function Topbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+export function Topbar({
+  onOpenSidebar,
+  user,
+}: {
+  onOpenSidebar: () => void;
+  user: ShellUser;
+}) {
   const unread = notifications.filter((n) => n.unread).length;
+  const router = useRouter();
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/sign-in");
+    router.refresh();
+  }
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-white/[0.06] bg-bg/70 px-4 backdrop-blur-xl sm:px-6">
@@ -144,17 +165,17 @@ export function Topbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
         {/* user */}
         <Dropdown>
           <DropdownTrigger className="flex items-center gap-2 rounded-xl p-0.5 transition-colors hover:bg-white/[0.05]">
-            <Avatar name={currentUser.name} size="md" ring />
+            <Avatar name={user.name} size="md" ring />
           </DropdownTrigger>
           <DropdownMenu align="end">
             <div className="flex items-center gap-3 px-2.5 py-2">
-              <Avatar name={currentUser.name} size="md" />
+              <Avatar name={user.name} size="md" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">
-                  {currentUser.name}
+                  {user.name}
                 </p>
                 <p className="truncate text-xs text-faint">
-                  {currentUser.email}
+                  {user.email}
                 </p>
               </div>
             </div>
@@ -170,17 +191,15 @@ export function Topbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
                 <CreditCard className="size-4" />
                 Billing
                 <span className="ml-auto rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-medium text-brand-200">
-                  {currentUser.plan}
+                  {user.plan}
                 </span>
               </DropdownItem>
             </Link>
             <DropdownSeparator />
-            <Link href="/">
-              <DropdownItem destructive>
-                <LogOut className="size-4" />
-                Log out
-              </DropdownItem>
-            </Link>
+            <DropdownItem destructive onSelect={handleSignOut}>
+              <LogOut className="size-4" />
+              Log out
+            </DropdownItem>
           </DropdownMenu>
         </Dropdown>
       </div>

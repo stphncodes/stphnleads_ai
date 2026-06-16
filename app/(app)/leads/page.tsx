@@ -3,13 +3,23 @@ import { Plus, Download, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { LeadsTable } from "@/components/leads/leads-table";
-import { leads, leadCounts } from "@/data/leads";
+import { getLeads } from "@/lib/queries";
 import { leadStatusConfig, leadStatusOrder } from "@/lib/lead-status";
 import { formatCompact } from "@/lib/utils";
+import type { LeadStatus } from "@/types";
 
 export const metadata: Metadata = { title: "Leads" };
 
-export default function LeadsPage() {
+export default async function LeadsPage() {
+  const leads = await getLeads();
+  const leadCounts = leads.reduce(
+    (acc, lead) => {
+      acc[lead.status] = (acc[lead.status] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<LeadStatus, number>,
+  );
+
   const summary = [
     { label: "Total leads", value: leads.length, tone: "text-foreground" },
     ...leadStatusOrder.map((s) => ({
@@ -57,7 +67,7 @@ export default function LeadsPage() {
         ))}
       </div>
 
-      <LeadsTable />
+      <LeadsTable leads={leads} />
     </div>
   );
 }

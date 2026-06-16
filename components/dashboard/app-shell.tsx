@@ -4,10 +4,16 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { SidebarContent } from "./sidebar";
-import { Topbar } from "./topbar";
+import { Topbar, type ShellUser } from "./topbar";
 import { cn } from "@/lib/utils";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: ShellUser;
+}) {
   const [collapsed, setCollapsed] = React.useState(false);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const pathname = usePathname();
@@ -73,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           collapsed ? "lg:pl-[76px]" : "lg:pl-64",
         )}
       >
-        <Topbar onOpenSidebar={() => setMobileOpen(true)} />
+        <Topbar onOpenSidebar={() => setMobileOpen(true)} user={user} />
         <main className="flex-1">{children}</main>
       </div>
     </div>
