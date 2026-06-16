@@ -2,8 +2,9 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
 import {
   Eye,
   EyeOff,
@@ -113,12 +114,13 @@ const fade = {
 
 export function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [loading, setLoading] = React.useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const next: Record<string, string> = {};
     if (!EMAIL_RE.test(email)) next.email = "Enter a valid email address.";
@@ -126,7 +128,20 @@ export function SignInForm() {
     setErrors(next);
     if (Object.keys(next).length) return;
     setLoading(true);
-    setTimeout(() => router.push("/dashboard"), 900);
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) {
+      setLoading(false);
+      setErrors({ password: error.message });
+      return;
+    }
+    const redirect = searchParams.get("redirect") ?? "/dashboard";
+    router.push(redirect);
+    router.refresh();
   }
 
   return (
@@ -220,7 +235,7 @@ export function SignUpForm() {
       setForm((f) => ({ ...f, [key]: e.target.value }));
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const next: Record<string, string> = {};
     if (form.name.trim().length < 2) next.name = "Tell us your name.";
@@ -230,7 +245,28 @@ export function SignUpForm() {
     setErrors(next);
     if (Object.keys(next).length) return;
     setLoading(true);
-    setTimeout(() => router.push("/dashboard"), 900);
+
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: { data: { name: form.name } },
+    });
+    if (error) {
+      setLoading(false);
+      setErrors({ email: error.message });
+      return;
+    }
+    // With email confirmation enabled, there's no active session yet.
+    if (!data.session) {
+      setLoading(false);
+      setErrors({
+        email: "Check your inbox to confirm your email, then sign in.",
+      });
+      return;
+    }
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -340,7 +376,7 @@ export function ForgotPasswordForm() {
   const [loading, setLoading] = React.useState(false);
   const [sent, setSent] = React.useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!EMAIL_RE.test(email)) {
       setError("Enter a valid email address.");
@@ -348,10 +384,18 @@ export function ForgotPasswordForm() {
     }
     setError("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setSent(true);
-    }, 900);
+
+    const supabase = createClient();
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      email,
+      { redirectTo: `${window.location.origin}/sign-in` },
+    );
+    setLoading(false);
+    if (resetError) {
+      setError(resetError.message);
+      return;
+    }
+    setSent(true);
   }
 
   if (sent) {

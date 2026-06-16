@@ -10,7 +10,6 @@ import {
   capabilities,
   generateAgentReply,
 } from "@/data/agent";
-import { currentUser } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import type { AgentMessage } from "@/types";
 
@@ -32,12 +31,18 @@ function TypingDots() {
   );
 }
 
-function AgentBubble({ message }: { message: AgentMessage }) {
+function AgentBubble({
+  message,
+  userName,
+}: {
+  message: AgentMessage;
+  userName: string;
+}) {
   const isUser = message.role === "user";
   return (
     <div className={cn("flex gap-3", isUser && "flex-row-reverse")}>
       {isUser ? (
-        <Avatar name={currentUser.name} size="sm" />
+        <Avatar name={userName} size="sm" />
       ) : (
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-brand-400 to-accent-500">
           <Sparkles className="size-4 text-white" />
@@ -57,7 +62,7 @@ function AgentBubble({ message }: { message: AgentMessage }) {
   );
 }
 
-export function AgentChat() {
+export function AgentChat({ userName }: { userName: string }) {
   const [messages, setMessages] = React.useState<AgentMessage[]>([]);
   const [input, setInput] = React.useState("");
   const [typing, setTyping] = React.useState(false);
@@ -190,7 +195,7 @@ export function AgentChat() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.25 }}
                   >
-                    <AgentBubble message={m} />
+                    <AgentBubble message={m} userName={userName} />
                   </motion.div>
                 ))}
               </AnimatePresence>

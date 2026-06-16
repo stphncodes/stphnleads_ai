@@ -3,10 +3,12 @@ import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { Button } from "@/components/ui/button";
 import { CampaignsView } from "@/components/campaigns/campaigns-view";
+import { getCampaigns } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "Campaigns" };
 
-export default function CampaignsPage() {
+export default async function CampaignsPage() {
+  const campaigns = await getCampaigns();
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <PageHeader
@@ -19,7 +21,7 @@ export default function CampaignsPage() {
           </Button>
         }
       />
-      <CampaignsView />
+      <CampaignsView campaigns={campaigns} />
     </div>
   );
 }

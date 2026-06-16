@@ -14,7 +14,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
-import { meetings, meetingTypeConfig } from "@/data/meetings";
+import { meetingTypeConfig } from "@/data/meetings";
 import { formatDay, formatTime, formatTimeRange, cn } from "@/lib/utils";
 import type { Meeting } from "@/types";
 
@@ -23,7 +23,7 @@ const tabs = [
   { value: "past", label: "Past" },
 ];
 
-export function MeetingsView() {
+export function MeetingsView({ meetings }: { meetings: Meeting[] }) {
   const [tab, setTab] = React.useState("upcoming");
   const list = React.useMemo(
     () =>
@@ -32,7 +32,7 @@ export function MeetingsView() {
           tab === "upcoming" ? m.status === "upcoming" : m.status !== "upcoming",
         )
         .sort((a, b) => a.start.localeCompare(b.start)),
-    [tab],
+    [meetings, tab],
   );
 
   const [activeId, setActiveId] = React.useState<string | null>(

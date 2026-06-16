@@ -11,15 +11,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { RevealGroup, RevealItem } from "@/components/motion/reveal";
 import { stats } from "@/data/dashboard";
+import { getProfile } from "@/lib/queries";
 import { currentUser } from "@/lib/nav";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const profile = (await getProfile()) ?? currentUser;
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
       <PageHeader
-        title={`Welcome back, ${currentUser.name.split(" ")[0]}`}
+        title={`Welcome back, ${profile.name.split(" ")[0] || "there"}`}
         description="Here's what's happening across your pipeline today."
         actions={
           <>
