@@ -41,7 +41,8 @@ export type LeadSource =
   | "Cold Email"
   | "Referral"
   | "Website"
-  | "Inbound";
+  | "Inbound"
+  | "Google Maps";
 
 export interface Note {
   id: string;
@@ -191,6 +192,26 @@ export interface TimeseriesPoint {
 export interface FunnelStage {
   stage: string;
   value: number;
+}
+
+/* ---------- Discovery (Google Maps prospecting) ---------- */
+export interface ProspectSearchParams {
+  location: string; // city / area, e.g. "Austin, TX"
+  category: string; // business type, e.g. "dentist", "plumber"
+  minRating: number; // 0-5
+  minReviews: number; // minimum review count
+}
+
+export interface MapProspect {
+  id: string;
+  name: string; // business name
+  category: string; // display category
+  rating: number; // 0-5
+  reviews: number; // review count
+  address: string;
+  phone?: string;
+  website: string | null; // null = no website on the listing (the signal)
+  mapsUrl: string;
 }
 
 /* ---------- Landing ---------- */
