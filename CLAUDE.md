@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**stphnLead AI** — an AI lead-generation + CRM SaaS. This repo is a **frontend MVP**: every screen is built and clickable on realistic mock data. There is **no backend** — auth, the AI agent, and integrations are mocked; nothing leaves the browser.
+**stphnLead AI** — an AI lead-generation + CRM SaaS. Every screen is built and clickable, backed by a **Supabase backend**: real email/password auth and per-user data (leads, deals, campaigns, meetings, inbox) live behind Row Level Security. The **AI agent and third-party integrations are still mocked** in the browser. See the Backend section below.
 
 ## Commands
 
@@ -51,8 +51,14 @@ Pages are **Server Components by default**; interactivity lives in `"use client"
 - Charts: `components/charts/index.tsx` wraps Recharts (`AreaChart`, `BarChart`, `DonutChart`, `Sparkline`) themed to the palette via `CHART_COLORS`.
 - Drag & drop: the CRM Kanban uses **dnd-kit** (`components/crm/kanban-board.tsx`) — multi-container sortable with `onDragOver` for cross-column moves.
 
+### Backend (Supabase)
+- **Schema** lives in `supabase/migrations/0001_init.sql`: `profiles` + the business tables, all under per-user **Row Level Security** (`auth.uid() = user_id`), plus an `on_auth_user_created` trigger that auto-provisions a profile row on signup. Apply it via the Supabase SQL editor / CLI.
+- **Clients** in `lib/supabase/`: `server.ts` (Server Components / Actions, cookie-based session), `client.ts` (browser/`"use client"`), `admin.ts` (service-role, **server-only** — never import client-side). `lib/supabase/proxy.ts` holds the session-refresh + route-guard logic, invoked by the root **`proxy.ts`** (Next 16's renamed middleware) — unauthenticated hits to `(app)` routes redirect to `/sign-in?redirect=…`.
+- **Data access** goes through `lib/queries.ts` (`getLeads`, `getDeals`, …): server-side, runs as the signed-in user so RLS scopes results, and maps DB snake_case → the camelCase domain types in `types/index.ts`. `(app)` pages are **async server components** that await these — adding `cookies()`/Supabase reads makes them dynamic, not statically prerendered.
+- **Env:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` (gitignored — keep the service-role key out of commits). `npm run seed` (`scripts/seed.ts`) loads the mock datasets for a demo user; `scripts/check.ts` probes connectivity.
+
 ### Data & config (where to change behavior)
-- `data/` holds **deterministic** mock datasets (leads, deals, campaigns, meetings, inbox, analytics, agent). **Never use `Math.random()` or `Date.now()` at render/module-eval** — these pages are statically prerendered, so non-determinism causes hydration mismatches. Generators derive everything from indices; timestamps are fixed ISO strings.
+- `data/` still holds the **deterministic** mock datasets — now consumed by `scripts/seed.ts` to populate Supabase, and still rendered directly by the not-yet-migrated surfaces (analytics, AI agent). **Never use `Math.random()` or `Date.now()` at render/module-eval** — non-determinism causes hydration mismatches. Generators derive everything from indices; timestamps are fixed ISO strings.
 - `lib/utils.ts` — `cn()` plus formatters. Use the **UTC-fixed** formatters (`formatClock`, `formatDay`, `formatTime`, `formatTimeRange`) for any rendered timestamp, so SSR and client output match.
 - `lib/nav.ts` — sidebar/nav items + `currentUser`. `lib/lead-status.ts` — status/stage/priority → label+tone config maps consumed across leads, CRM, and badges.
 - `types/index.ts` — all domain models (`Lead`, `Deal`, `Campaign`, `Meeting`, `InboxThread`, `AgentMessage`, …).
